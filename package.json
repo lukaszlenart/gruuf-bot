@@ -1,0 +1,20 @@
+{
+  "name": "gruuf-bot",
+  "version": "1.0.0",
+  "description": "A bot to support Gruuf App via Messanger",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bot",
+    "motorbike",
+    "support"
+  ],
+  "author": "Lukasz Lenart",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2"
+  }
+}
