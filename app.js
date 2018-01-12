@@ -4,10 +4,15 @@
 const 
   express = require('express'),
   bodyParser = require('body-parser'),
-  app = express().use(bodyParser.json()); // creates express http server
+  app = express().use(bodyParser.json()), // creates express http server
+  register_subscribe_hook = require('./register_subscribe_hook'),
+  callSendAPI = require('./callSendApi');
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 8080, () => console.log('webhook is listening'));
+
+// register subscribe confirmation handler
+register_subscribe_hook(app);
 
 // Creates the endpoint for our webhook 
 app.post('/webhook', (req, res) => {  
@@ -19,11 +24,21 @@ app.post('/webhook', (req, res) => {
 
     // Iterates over each entry - there may be multiple if batched
     body.entry.forEach(function(entry) {
+      // Gets the body of the webhook event
+      let webhook_event = entry.messaging[0];
+      console.log(JSON.stringify(webhook_event));
 
-      // Gets the message. entry.messaging is an array, but 
-      // will only ever contain one message, so we get index 0
-      let webhookEvent = entry.messaging[0];
-      console.log(webhookEvent);
+      // Get the sender PSID
+      let sender_psid = webhook_event.sender.id;
+      console.log('Sender PSID: ' + sender_psid);
+
+      // Check if the event is a message or postback and
+      // pass the event to the appropriate handler function
+      if (webhook_event.message) {
+        handleMessage(sender_psid, webhook_event.message);        
+      } else {
+        handleNonMessage(sender_psid);
+      }
     });
 
     // Returns a '200 OK' response to all requests
@@ -35,30 +50,29 @@ app.post('/webhook', (req, res) => {
 
 });
 
-// Adds support for GET requests to our webhook
-app.get('/webhook', (req, res) => {
+function handleMessage(sender_psid, received_message) {
 
-  // Your verify token. Should be a random string.
-  let VERIFY_TOKEN = process.env.GRUUF_FACEBOOK_VERIFY_TOKEN;
-    
-  // Parse the query params
-  let mode = req.query['hub.mode'];
-  let token = req.query['hub.verify_token'];
-  let challenge = req.query['hub.challenge'];
-    
-  // Checks if a token and mode is in the query string of the request
-  if (mode && token) {
-  
-    // Checks the mode and token sent is correct
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      
-      // Responds with the challenge token from the request
-      console.log('WEBHOOK_VERIFIED');
-      res.status(200).send(challenge);
-    
-    } else {
-      // Responds with '403 Forbidden' if verify tokens do not match
-      res.sendStatus(403);      
+  let response;
+
+  // Check if the message contains text
+  if (received_message.text) {    
+
+    // Create the payload for a basic text message
+    response = {
+      "text": "You sent the message: " + received_message.text
     }
-  }
-});
+  }  
+  
+  // Sends the response message
+  callSendAPI(sender_psid, response);    
+}
+
+function handleNonMessage(sender_psid) {
+  // Create the payload for a basic text message
+  let response = {
+    "text": 'Sorry but I only support text messages.'
+  };
+  
+  // Sends the response message
+  callSendAPI(sender_psid, response);    
+}
