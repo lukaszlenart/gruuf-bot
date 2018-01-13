@@ -6,7 +6,8 @@ const
   bodyParser = require('body-parser'),
   app = express().use(bodyParser.json()), // creates express http server
   register_subscribe_hook = require('./register_subscribe_hook'),
-  callToAsidMatching = require('./callPsidToAsidMatching'),
+  callToAsidMatching = require('./callToAsidMatching'),
+  callUserProfile = require('./callUserProfile'),
   callSendAPI = require('./callSendApi');
 
 // Sets server port and logs message on success
@@ -52,21 +53,45 @@ app.post('/webhook', (req, res) => {
 });
 
 function handleMessage(sender_psid, received_message) {
+  callToAsidMatching(sender_psid)
+  .catch((err) => {
+    console.log(err);
+    return {};
+  })
+  .then((body) => {
+    console.log(JSON.stringify(body));
 
-  let response;
-
-  // Check if the message contains text
-  if (received_message.text) {
-    // Create the payload for a basic text message
-    response = {
-      "text": "You sent the message: " + received_message.text
+    if (body.data && body.data.length > 0) {
+      return callUserProfile(body.data[0].id)
+    } else {
+      return {}
     }
-  }
+  })
+  .catch((err) => {
+    console.log(err);
+    return {}
+  })
+  .then((body) => {
+    let response;
 
-  callToAsidMatching(sender_psid, response);
+    if (received_message.text) {
+      if (body.profile) {
+        response = {
+          text: "Hello " + body.profile.firstName + ", you sent the message: " + received_message.text
+        }
+      } else {
+        response = {
+          text: "Please login to the app using Facebook in other case I won't be able to assist you."
+        }
+      }
+    } else {
+      response = {
+        text: "No message from your side?!?"
+      }
+    }
 
-  // Sends the response message
-  callSendAPI(sender_psid, response);    
+    callSendAPI(sender_psid, response);
+  });
 }
 
 function handleNonMessage(sender_psid) {
