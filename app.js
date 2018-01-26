@@ -113,6 +113,11 @@ function handleUserMessage(user_profile, received_message) {
       received_message.nlp.entities.show_bikes.length > 0 &&
       received_message.nlp.entities.show_bikes[0].value === 'all';
 
+  const is_register_mileage =
+      received_message.nlp.entities.register_mileage &&
+      received_message.nlp.entities.register_mileage.length > 0 &&
+      received_message.nlp.entities.register_mileage[0].value === 'mileage';
+
   if (is_greeting) {
     return {
       text: "Hello " + user_profile.profile.firstName + ", at your service."
@@ -121,7 +126,14 @@ function handleUserMessage(user_profile, received_message) {
     if (user_profile.bikes && user_profile.bikes.length > 0) {
       let bikes = '';
       for (let bike of user_profile.bikes) {
-        bikes += "\n- " + bike.name + " (" + bike.metadata.manufacturer + " " + bike.metadata.model + ")"
+        let mileage_type = "";
+        if (bike.mileage) {
+          mileage_type = " - mileage: " + bike.mileage + " km";
+        } else if (bike.mth) {
+          mileage_type = " - mileage: " + bike.mileage + " mth";
+        }
+
+        bikes += "\n- " + bike.name + " (" + bike.metadata.manufacturer + " " + bike.metadata.model + ")" + mileage_type;
       }
       return {
         text: "Here is a list of your bikes:" + bikes
@@ -129,6 +141,44 @@ function handleUserMessage(user_profile, received_message) {
     } else {
       return {
         text: "You have no bikes registered, visit the website to add some :)"
+      }
+    }
+  } else if (is_register_mileage) {
+    const bike_name = received_message.nlp.entities._bike[0].value;
+
+    let mileage;
+    let mileage_type;
+
+    if (mileage = received_message.nlp.entities.number) {
+      mileage = received_message.nlp.entities.number[0].value;
+    } else {
+      return {
+        text: "Please specify value of the mileage as a number."
+      }
+    }
+
+    if (received_message.nlp.entities.mileage_type) {
+      mileage_type = received_message.nlp.entities.mileage_type[0].value;
+    } else {
+      return {
+        text: "Please specify type of the mileage, either 'km' or 'mth'."
+      }
+    }
+
+    let is_valid = false;
+    for (let bike of user_profile.bikes) {
+      if (bike.name === bike_name) {
+        is_valid = true;
+      }
+    }
+
+    if (is_valid) {
+      return {
+        text: "Done, registered " + mileage + " " + mileage_type + " for bike " +bike_name
+      }
+    } else {
+      return {
+        text: "Sorry but I cannot find bike named '" + bike_name + "' in your garage."
       }
     }
   } else {
