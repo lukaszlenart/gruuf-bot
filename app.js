@@ -76,9 +76,7 @@ function handleMessage(sender_psid, received_message) {
 
     if (received_message.text) {
       if (body.profile) {
-        response = {
-          text: "Hello " + body.profile.firstName + ", you sent the message: " + received_message.text
-        }
+        response = handleUserMessage(body, received_message);
       } else {
         response = {
           text: "Please login to the app using Facebook in other case I won't be able to assist you."
@@ -102,4 +100,41 @@ function handleNonMessage(sender_psid) {
   
   // Sends the response message
   callSendAPI(sender_psid, response);    
+}
+
+function handleUserMessage(user_profile, received_message) {
+  const is_greeting =
+      received_message.nlp.entities.greetings &&
+      received_message.nlp.entities.greetings.length > 0 &&
+      received_message.nlp.entities.greetings[0].value === 'true';
+
+  const is_show_bikes =
+      received_message.nlp.entities.show_bikes &&
+      received_message.nlp.entities.show_bikes.length > 0 &&
+      received_message.nlp.entities.show_bikes[0].value === 'all';
+
+  if (is_greeting) {
+    return {
+      text: "Hello " + user_profile.profile.firstName + ", at your service."
+    }
+  } else if (is_show_bikes) {
+    if (user_profile.bikes && user_profile.bikes.length > 0) {
+      let bikes = '';
+      for (let bike of user_profile.bikes) {
+        bikes += "\n- " + bike.name + " (" + bike.metadata.manufacturer + " " + bike.metadata.model + ")"
+      }
+      return {
+        text: "Here is a list of your bikes:" + bikes
+      }
+    } else {
+      return {
+        text: "You have no bikes registered, visit the website to add some :)"
+      }
+    }
+  } else {
+    return {
+      text: "I cannot help you yet " + user_profile.profile.firstName +", please try again later :("
+    }
+  }
+
 }
