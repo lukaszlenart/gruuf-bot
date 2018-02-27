@@ -8,6 +8,7 @@ const
   register_subscribe_hook = require('./register_subscribe_hook'),
   callToAsidMatching = require('./callToAsidMatching'),
   callUserProfile = require('./callUserProfile'),
+  callRegisterMileage = require('./callRegisterMileage'),
   callSendAPI = require('./callSendApi');
 
 // Sets server port and logs message on success
@@ -146,6 +147,7 @@ function handleUserMessage(user_profile, received_message) {
   } else if (is_register_mileage) {
     const bike_name = received_message.nlp.entities._bike[0].value;
 
+    let bike_id;
     let mileage;
     let mileage_type;
 
@@ -168,14 +170,25 @@ function handleUserMessage(user_profile, received_message) {
     let is_valid = false;
     for (let bike of user_profile.bikes) {
       if (bike.name === bike_name) {
+        bike_id = bike.id;
         is_valid = true;
       }
     }
 
     if (is_valid) {
-      return {
-        text: "Done, registered " + mileage + " " + mileage_type + " for bike " +bike_name
-      }
+      let response = {
+        text: "Done, registered " + mileage + " " + mileage_type + " for bike " + bike_name
+      };
+
+      callRegisterMileage(user_profile.asid, bike_id, mileage, mileage_type)
+        .catch((err) => {
+          console.log(err);
+          response = {
+            text: "Something went wrong and I cannot register the mileage, sorry for that :("
+          }
+        });
+
+      return response;
     } else {
       return {
         text: "Sorry but I cannot find bike named '" + bike_name + "' in your garage."
