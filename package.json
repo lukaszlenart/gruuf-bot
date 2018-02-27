@@ -2,7 +2,7 @@
   "name": "gruuf-bot",
   "version": "1.0.0",
   "description": "A bot to support Gruuf App via Messanger",
-  "main": "index.js",
+  "main": "app.js",
   "keywords": [
     "bot",
     "motorbike",
