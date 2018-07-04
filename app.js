@@ -80,7 +80,9 @@ function handleMessage(sender_psid, received_message) {
         response = handleUserMessage(body, received_message);
       } else {
         response = {
-          text: "Please login to the app " + <a href="http://gruuf.com/login">here</a> + " using your Facebook account in other case I won't be able to assist you."
+          "type": "web_url",
+          "url": "https://gruuf.com",
+          "title": "Login to app",
         }
       }
     } else {
