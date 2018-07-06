@@ -30,4 +30,4 @@ function register_subscribe_hook(app) {
   });
 }
 
-module.exports = register_subscribe_hook
+module.exports = register_subscribe_hook;
