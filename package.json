@@ -18,7 +18,6 @@
     "node": "8.9.2"
   },
   "scripts": {
-    "deploy": "gcloud app deploy",
     "start": "node app.js"
   },
   "dependencies": {
