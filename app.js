@@ -1,7 +1,7 @@
 'use strict';
 
 // Imports dependencies and set up http server
-const 
+const
   express = require('express'),
   bodyParser = require('body-parser'),
   app = express().use(bodyParser.json()), // creates express http server
@@ -17,9 +17,9 @@ app.listen(process.env.PORT || 8080, () => console.log('webhook is listening'));
 // register subscribe confirmation handler
 register_subscribe_hook(app);
 
-// Creates the endpoint for our webhook 
-app.post('/webhook', (req, res) => {  
- 
+// Creates the endpoint for our webhook
+app.post('/webhook', (req, res) => {
+
   let body = req.body;
 
   // Checks this is an event from a page subscription
@@ -38,7 +38,7 @@ app.post('/webhook', (req, res) => {
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
       if (webhook_event.message) {
-        handleMessage(sender_psid, webhook_event.message);        
+        handleMessage(sender_psid, webhook_event.message);
       } else {
         handleNonMessage(sender_psid);
       }
@@ -80,7 +80,9 @@ function handleMessage(sender_psid, received_message) {
         response = handleUserMessage(body, received_message);
       } else {
         response = {
-          text: "Please login to the app using Facebook in other case I won't be able to assist you."
+          "type": "web_url",
+          "url": "https://gruuf.com",
+          "title": "Login to app",
         }
       }
     } else {
@@ -98,9 +100,9 @@ function handleNonMessage(sender_psid) {
   let response = {
     "text": 'Sorry but I only support text messages.'
   };
-  
+
   // Sends the response message
-  callSendAPI(sender_psid, response);    
+  callSendAPI(sender_psid, response);
 }
 
 function handleUserMessage(user_profile, received_message) {
