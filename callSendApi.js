@@ -20,8 +20,7 @@ function callSendAPI(sender_psid, response) {
     uri: "https://graph.facebook.com/v2.6/me/messages",
     qs: {
       access_token: PAGE_ACCESS_TOKEN,
-      appsecret_proof: APPSECRET_PROOF,
-      app: APP_ID
+      appsecret_proof: APPSECRET_PROOF
     },
     method: "POST",
     json: request_body
