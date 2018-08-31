@@ -2,7 +2,8 @@
 
 const
   request = require('request'),
-  PAGE_ACCESS_TOKEN = process.env.GRUUF_FACEBOOK_PAGE_ACCESS_TOKEN;
+  PAGE_ACCESS_TOKEN = process.env.GRUUF_FACEBOOK_PAGE_ACCESS_TOKEN,
+  APPSECRET_PROOF = process.env.GRUUF_FACEBOOK_APPSECRET_PROOF;
 
 function callSendAPI(sender_psid, response) {
   // Construct the message body
@@ -18,7 +19,9 @@ function callSendAPI(sender_psid, response) {
   request({
     uri: "https://graph.facebook.com/v2.6/me/messages",
     qs: {
-      access_token: PAGE_ACCESS_TOKEN
+      access_token: PAGE_ACCESS_TOKEN,
+      appsecret_proof: APPSECRET_PROOF,
+      app: APP_ID
     },
     method: "POST",
     json: request_body
