@@ -60,7 +60,7 @@ function handleMessage(sender_psid, received_message) {
     return {};
   })
   .then((body) => {
-    console.log(JSON.stringify(body));
+    console.log("Sender ASID: " + JSON.stringify(body));
 
     if (body.data && body.data.length > 0) {
       return callUserProfile(body.data[0].id)
