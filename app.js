@@ -26,7 +26,7 @@ app.post('/webhook', (req, res) => {
   if (body.object === 'page') {
 
     // Iterates over each entry - there may be multiple if batched
-    body.entry.forEach(function(entry) {
+    body.entry.forEach(function (entry) {
       // Gets the body of the webhook event
       let webhook_event = entry.messaging[0];
       console.log(JSON.stringify(webhook_event));
@@ -55,44 +55,45 @@ app.post('/webhook', (req, res) => {
 
 function handleMessage(sender_psid, received_message) {
   callToAsidMatching(sender_psid)
-  .catch((err) => {
-    console.log(err);
-    return {};
-  })
-  .then((body) => {
-    console.log(JSON.stringify(body));
+    .catch((err) => {
+      console.log(err);
+      return {};
+    })
+    .then((body) => {
+      console.log(JSON.stringify(body));
 
-    if (body.data && body.data.length > 0) {
-      return callUserProfile(body.data[0].id)
-    } else {
+      if (body.data && body.data.length > 0) {
+        return callUserProfile(body.data[0].id)
+      } else {
+        return {}
+      }
+    })
+    .catch((err) => {
+      console.log(err);
       return {}
-    }
-  })
-  .catch((err) => {
-    console.log(err);
-    return {}
-  })
-  .then((body) => {
-    let response;
+    })
+    .then((body) => {
+      let response;
 
-    if (received_message.text) {
-      if (body.profile) {
-        response = handleUserMessage(body, received_message);
+      if (received_message.text) {
+        if (body.profile) {
+          response = handleUserMessage(body, received_message);
+        } else {
+          response = {
+            "type": "web_url",
+            "url": "https://gruuf.com",
+            "title": "Login to app",
+            "link": "https://facebook.com" //add on page href
+          }
+        }
       } else {
         response = {
-          "type": "web_url",
-          "url": "https://gruuf.com",
-          "title": "Login to app",
+          text: "No message from your side?!?"
         }
       }
-    } else {
-      response = {
-        text: "No message from your side?!?"
-      }
-    }
 
-    callSendAPI(sender_psid, response);
-  });
+      callSendAPI(sender_psid, response);
+    });
 }
 
 function handleNonMessage(sender_psid) {
@@ -107,19 +108,19 @@ function handleNonMessage(sender_psid) {
 
 function handleUserMessage(user_profile, received_message) {
   const is_greeting =
-      received_message.nlp.entities.greetings &&
-      received_message.nlp.entities.greetings.length > 0 &&
-      received_message.nlp.entities.greetings[0].value === 'true';
+    received_message.nlp.entities.greetings &&
+    received_message.nlp.entities.greetings.length > 0 &&
+    received_message.nlp.entities.greetings[0].value === 'true';
 
   const is_show_bikes =
-      received_message.nlp.entities.show_bikes &&
-      received_message.nlp.entities.show_bikes.length > 0 &&
-      received_message.nlp.entities.show_bikes[0].value === 'all';
+    received_message.nlp.entities.show_bikes &&
+    received_message.nlp.entities.show_bikes.length > 0 &&
+    received_message.nlp.entities.show_bikes[0].value === 'all';
 
   const is_register_mileage =
-      received_message.nlp.entities.register_mileage &&
-      received_message.nlp.entities.register_mileage.length > 0 &&
-      received_message.nlp.entities.register_mileage[0].value === 'mileage';
+    received_message.nlp.entities.register_mileage &&
+    received_message.nlp.entities.register_mileage.length > 0 &&
+    received_message.nlp.entities.register_mileage[0].value === 'mileage';
 
   if (is_greeting) {
     return {
@@ -198,7 +199,7 @@ function handleUserMessage(user_profile, received_message) {
     }
   } else {
     return {
-      text: "I cannot help you yet " + user_profile.profile.firstName +", please try again later :("
+      text: "I cannot help you yet " + user_profile.profile.firstName + ", please try again later :("
     }
   }
 
